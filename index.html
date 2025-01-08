@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Weather Data</title>
+    <style>
+        body {
+            font-family: "Courier New", monospace;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+            cursor: pointer;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+        .checkbox-container {
+            margin-bottom: 10px;
+        }
+        .checkbox-container label {
+            margin-right: 15px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Daily Weather Data</h1>
+    <label for="datePicker">Select Date:</label>
+    <input type="date" id="datePicker">
+    <button onclick="fetchDailyData()">Fetch Data</button>
+
+    <div class="checkbox-container" id="checkboxContainer"></div>
+
+    <button onclick="downloadData()">Download Data</button>
+
+    <table>
+        <thead>
+            <tr>
+                <th onclick="sortTable(0)">code</th>
+                <th onclick="sortTable(1)">station</th>
+                <th onclick="sortTable(2)">x</th>
+                <th onclick="sortTable(3)">y</th>
+                <th onclick="sortTable(4)">time</th>
+                <th onclick="sortTable(5)">tx</th>
+                <th onclick="sortTable(6)">tn</th>
+                <th onclick="sortTable(7)">t</th>
+            </tr>
+        </thead>
+        <tbody id="dataBody">
+        </tbody>
+    </table>
+
+    <script>
+        const stationIds = ["ILUBIN17", "ILUBIN16", "IMIROS2", "IOSIEK4", "IDSLEGNI2", "INIEMS3", "IRASZW2", "IMIOGO1", "ILEGNI13", "ILEGNICA13", "ILEGNI3", "ILEGNI8", "ILEGNI22", "ILEGNI25", "ILEGNI24", "IWOJEWDZ128", "ILEGNICA2", "ICINAW1", "ICINAW8", "IGRZYM3", "IBIAA4", "IZOTOR6", "IUNIEJ2", "IGODZI4", "IJAWOR37", "IJAWOR42", "IJAWOR47", "IJAWOR45", "IMYLIB1", "IPROBO12", "IRZNIK1", "IJEWSU1", "IDZIWI2", "IJELEN41", "IJELEN9", "IJELEN40", "IJELENIA7", "IOMNIC6", "IOMNIC7", "IOMNIC8", "IJELEN19", "IWOJCI3", "IJELEN34", "ISTANI10", "IPODGRZY3", "IJELEN14", "IPIECH3", "IPIECH2", "IJELEN36", "IMIKW1", "IKARPA7", "ILESZC3", "IPACZY2", "IOPAWA1", "ILUBAW6", "IJANOW13", "IMARCI35", "IMKAMIE39", "ICZADR1", "IWOJEWDZ86", "IKRZES5", "IJAWIS7", "ISOKOO7", "IWITKW2", "ISTRZEGO3", "ISTRZEGO9",
+"IDSSTRZE2", "ISTRZE30", "IGOCI2", "IKRYNI10", "ICIECH13", "IRODAL3", "IBRZEG19", "IBRZEG26", "IKSIGI1", "ILIPNI2", "IKRZEL1", "IBIAKW3", "IWSOSZ4", "ILUBOS1", "IWRONW2", "IWOJSZ1", "ISERBY1", "IKULW1", "IKOTLA1", "IKWIEL1", "ITRZSW1", "IPOLKO9", "IPOLKOWI3", "IPIOTR23", "IJAGOD5", "IDOBRA27", "IBOLES4", "IBOLES8", "IBOLES2", "IOTOK4", "ILUBKW1", "IGRONW2", "IHENRY5", "IRADOG2", "ILUBA4", "IUNIEG1", "IPLATE21", "IBOGAT4", "IBOGAT7", "IBOGAT5", "IBOGAT8", "IWOJEWDZ108", "IOPOLN1", "IOLSZY4", "IGRYFW1", "ILENA20", "IMIRSK3", "ICHMIE5", "IGAJWK1", "IWIERA4", "IJUGW1", "INOWAR2", "ISIERP3", "IGUSZY3", "IJEDLI2", "IDZIEM2", "IWABRZ7", "IWABRZ33", "IWABRZ32", "IWABRZ21", "IWABRZ23", "IWABRZ15", 
+"IWABRZ34", "ICIESZ31", "IWIEBO6", "IWIEBO2", "IWOJEWDZ56", "IWIDNI4", "IWIDNI20", "IWIDNI15", "IBOLEC8", "IOPOCZ2", "IMOCIS1", "ILUTOM4", "IWOJEWDZ49", "IPIESZ1", "IBIELA27", "IKUDOW2", "IKULIN3", "IZOTNO1", "IJARKW1", "ISZCZY8", "IDUSZN3", "ILASWK1", "IWJTOW2", "IBYSTR6", "IMOSTO1", "IWYSZK3", "IKAMIE57", "ICHWAL1", "IGORZA2", "IKLODZK11", "IPOLAN8", "IBIERK2", "IPRZED6", "IKOBYL51", "ISOSNO27", "ICHAUP3", "IZIBIC1", "IBONOW1", "IPRZEW15", "IBIAYK1", "IGOCIC1", "IWYSZO1", "ISTRZE21", "ISZCZA2", "IPAWNA2", "IWOJEWDZ153", "IMARCI23", "IOZORZ3", "IARW32", "ISTRA298", "IIMBRA1", "IBORZY2", "IWIRY5", "ISOKOL16", "ISULIS3", "ISOBTK2", "ISOBTK4", "ISOBTK5", "IBORW4", "ISTARY22", "IKUKLI1", "ICZERC6", "IGNIEC1", "ICHRZA5", "ILZA2", "IBIELA8", "IKTYWROC3", "IMAUSZ1", "ILISOW1", "ILUTYN2", "ILUTYN6", "IGMINAMI3", "IKRPIC2", "ISAMOT3", "ISMOLE6", "ISMOLE27", "ISMOLE23", 
+"ISMOLE26",
+"ISMOLE7",
+"ICESAR1", "IGDW5", "IWYSOK6", "IERNIK1", "ISMARD1", "IRADWA4", "IWITAK2", "ISIECH5", "ISIECH3", "IJELCZ9", "IJELCZ11", "IG5", "ICHRZS5", "ICHRZS6", "ICHRZS7", "ICHRZS9",
+"INADOL7", "INADOL1", "IGAJKW1", 
+"IKAMIE42", "ISOLNI6", "ISTRON33", "IPONIA4", "IBYSTR45", "IOLENI2", "IOLENI7", "IOLENI39", "IDBROW54", "IOLENI32", "IRADZO1", "IDZIAD2", "ISYCW3", "IDZIAO3", "INOWIC1", "ISDROY1", "IDBROW60", "IMIDZY12", "IDOMAS5", "IKRONI6", "IKRONI1", "IKASZO1", "IBARKO1", "ISIODK1", "ISKOKO1", "IBUDZI1", "ISKORO5", "IKOBYL47", "IKAOWI1", "IBUDCZ1", "ITRZEB10", "ITRZEB25", "ITRZEB31", "ITRZEB35", "ITRZEB37", 
+"IMORZC1", "IOBORN16", "IGOLDZ7", "ILUBNW1", "IPGW1", "IPIOTR15", "IPGW2", "ISZEWC3", "IOBORN10", "IWISZN8", "IWYSOK8", "ILIGOT9", "IBOLEC2", "IDOMAS11", "IMIRKW1", "IWILCZ16", "IKIECZ7", "IKIECZ4", "IKIECZ2", "IWILCZ19", "IWILCZ11", "IDOLNOU016", "IWROCA37", "IWROCA143", "IDSOLTAS9", "IWROCA158", "IWROCA168", "IWROCA172", "IWROCA122", "IWROCA152",  
+"IWROCA127", "IWROCA185", "IWROCA113", "IWROCA154", "IWROCA186", "IWROCA139", "IWROCA189", "IWROCA50", "IWROCA83", "IWROCA112", "IWROCA183", "IWROCA67",
+"IWROCA34", "IWROCA165", "IWROCA116", "IWROCA82", "IWROCA109", "IWROCA153", "IWROCA62", "IWROCA159", "IWROCA174", "IWROCA47", "IWROCA115", "IWROCA91", "IWROCA175", "IWROCA114", "IWROCA156", "IWROCA124", "IWROCA141", "IWROCA161", "IWROCAW66", "IWROCL2", "IWROCA184", "IWROCA76", "IWROCA96", "IWROCA177", "IWROCAW52", "IDOLNOU011", "IWROCA38"];
+        const apiKey = 'e1f10a1e78da46f5b10a1e78da96f525';
+
+        async function fetchDailyData() {
+            const selectedDate = document.getElementById('datePicker').value;
+            if (!selectedDate) {
+                alert('Please select a date.');
+                return;
+            }
+
+            const tableBody = document.getElementById('dataBody');
+            tableBody.innerHTML = '';
+
+            for (const stationId of stationIds) {
+                const dailyUrl = `https://api.weather.com/v2/pws/history/daily?stationId=${stationId}&format=json&units=m&startDate=${selectedDate.replace(/-/g, '')}&endDate=${selectedDate.replace(/-/g, '')}&numericPrecision=decimal&apiKey=${apiKey}`;
+                const currentUrl = `https://api.weather.com/v2/pws/observations/current?apiKey=${apiKey}&stationId=${stationId}&numericPrecision=decimal&format=json&units=m`;
+
+                try {
+                    const [dailyResponse, currentResponse] = await Promise.all([
+                        fetch(dailyUrl).then(res => res.json()),
+                        fetch(currentUrl).then(res => res.json())
+                    ]);
+
+                    const observation = dailyResponse.observations[0];
+                    const currentStation = currentResponse.observations[0];
+
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${observation.stationID}</td>
+                        <td>${currentStation.neighborhood}</td>
+                        <td>${observation.lon}</td>
+                        <td>${observation.lat}</td>
+                        <td>${observation.obsTimeLocal}</td>
+                        <td>${observation.metric.tempHigh}</td>
+                        <td>${observation.metric.tempLow}</td>
+                        <td>${observation.metric.tempAvg}</td>
+                    `;
+                    tableBody.appendChild(row);
+                } catch (error) {
+                    console.error('Error fetching data for station', stationId, error);
+                }
+            }
+            updateCheckboxes();
+        }
+
+        function updateCheckboxes() {
+            const headers = document.querySelectorAll('th');
+            const checkboxContainer = document.getElementById('checkboxContainer');
+            checkboxContainer.innerHTML = '';
+
+            headers.forEach((header, index) => {
+                const label = document.createElement('label');
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.checked = true;
+                checkbox.dataset.column = index;
+
+                checkbox.addEventListener('change', () => {
+                    const columnIndex = parseInt(checkbox.dataset.column, 10);
+                    const cells = document.querySelectorAll(`td:nth-child(${columnIndex + 1}), th:nth-child(${columnIndex + 1})`);
+                    cells.forEach(cell => cell.style.display = checkbox.checked ? '' : 'none');
+                });
+
+                label.appendChild(checkbox);
+                label.appendChild(document.createTextNode(header.textContent));
+                checkboxContainer.appendChild(label);
+            });
+        }
+
+        function sortTable(columnIndex) {
+            const table = document.querySelector('table');
+            const rows = Array.from(table.rows).slice(1);
+            const isAscending = table.getAttribute(`data-sort-order-${columnIndex}`) !== 'asc';
+
+            rows.sort((a, b) => {
+                const cellA = a.cells[columnIndex].textContent.trim();
+                const cellB = b.cells[columnIndex].textContent.trim();
+
+                if (!isNaN(cellA) && !isNaN(cellB)) {
+                    return isAscending ? cellA - cellB : cellB - cellA;
+                } else {
+                    return isAscending ? cellA.localeCompare(cellB) : cellB.localeCompare(cellA);
+                }
+            });
+
+            table.setAttribute(`data-sort-order-${columnIndex}`, isAscending ? 'asc' : 'desc');
+            rows.forEach(row => table.tBodies[0].appendChild(row));
+        }
+
+        function downloadData() {
+            const rows = Array.from(document.querySelectorAll('table tr')).map(row => 
+                Array.from(row.cells).map(cell => cell.textContent).join('\t')
+            );
+            const csvContent = rows.join('\n');
+
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+
+            const filename = `${year}-${month}-${day}_${hours}${minutes}_wundeground_temp.txt`;
+
+            const blob = new Blob([csvContent], { type: 'text/plain' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            link.click();
+        }
+    </script>
+</body>
+</html>
